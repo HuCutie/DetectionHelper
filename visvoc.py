@@ -115,7 +115,7 @@ def show_image(image_path, anno_path, save_path, plot_image=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-ip', '--image-path', type=str, default='/workspace/valdata/images', help='image path')
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/valdata/labels', help='annotation path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/valdata/coco2voclabels', help='annotation path')
     parser.add_argument('-sp', '--save-path', type=str, default='/workspace/resultsvoc', help='labeled img saving path')
     parser.add_argument('-p', '--plot-image', action='store_true', help='weather to save stastic result')
     opt = parser.parse_args()
