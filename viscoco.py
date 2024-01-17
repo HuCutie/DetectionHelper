@@ -3,11 +3,7 @@ import os
 from collections import defaultdict
 from xml import etree
 from pycocotools.coco import COCO
-
 import cv2
-import matplotlib
-
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 

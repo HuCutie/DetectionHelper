@@ -2,11 +2,7 @@ import argparse
 import os
 import sys
 from collections import defaultdict
-
 import cv2
-import matplotlib
-
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
@@ -49,28 +45,30 @@ def draw_box(img, objects, draw=True):
         ymin = int(object[1][1])
         xmax = int(object[1][2])
         ymax = int(object[1][3])
-        if draw:
-            def hex2rgb(h):  # rgb order (PIL)
-                return tuple(int(h[1 + i:1 + i + 2], 16) for i in (0, 2, 4))
+        def hex2rgb(h):  # rgb order (PIL)
+            return tuple(int(h[1 + i:1 + i + 2], 16) for i in (0, 2, 4))
 
-            hex = ('FF3838', 'FF9D97', 'FF701F', 'FFB21D', 'CFD231', '48F90A', '92CC17', '3DDB86', '1A9334', '00D4BB',
-                   '2C99A8', '00C2FF', '344593', '6473FF', '0018EC', '8438FF', '520085', 'CB38FF', 'FF95C8', 'FF37C7')
+        hex = ('FF0000', '00FF00', '0000FF', 'FFA500', 'FF00FF', '00FFFF', 'FFD700', '800080', '008000', '800000',
+               '008080', 'FF4500', '9400D3', '008B8B', 'FF1493', '32CD32', '1E90FF', 'FF69B4', 'FF6347', '20B2AA')
 
-            palette = [hex2rgb('#' + c) for c in hex]
-            n = len(palette)
-            c = palette[int(category_id) % n]
-            bgr = False
-            color = (c[2], c[1], c[0]) if bgr else c
 
-            cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color)
-            cv2.putText(img, category_name, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, color)
+        palette = [hex2rgb('#' + c) for c in hex]
+        n = len(palette)
+        c = palette[int(category_id) % n]
+        color = (c[2], c[1], c[0])
+
+        cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color)
+        cv2.putText(img, category_name, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, color, thickness=2)
     return img
 
 
-def show_image(image_path, anno_path, show=False, plot_image=False):
+def show_image(image_path, anno_path, save_path, plot_image=False):
     assert os.path.exists(image_path), "image path:{} dose not exists".format(image_path)
     assert os.path.exists(anno_path), "annotation path:{} does not exists".format(anno_path)
     anno_file_list = [os.path.join(anno_path, file) for file in os.listdir(anno_path) if file.endswith(".txt")]
+    
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
 
     with open(anno_path + "/classes.txt", 'r') as f:
         classes = f.readlines()
@@ -101,55 +99,35 @@ def show_image(image_path, anno_path, show=False, plot_image=False):
                 obj = [category_name, bbox]
                 objects.append(obj)
 
-        img = draw_box(img, objects, show)
-        if show:
-            cv2.imshow(filename, img)
-            cv2.waitKey()
-            cv2.destroyAllWindows()
+        img = draw_box(img, objects)
+        res_path = os.path.join(save_path, filename)
+        cv2.imwrite(res_path, img)
+        
     if plot_image:
-        # 绘制每种类别个数柱状图
         plt.bar(range(len(every_class_num)), every_class_num.values(), align='center')
-        # 将横坐标0,1,2,3,4替换为相应的类别名称
-        plt.xticks(range(len(every_class_num)), every_class_num.keys(), rotation=90)
-        # 在柱状图上添加数值标签
+        plt.xticks(range(len(every_class_num)), every_class_num.keys(), rotation=0)
         for index, (i, v) in enumerate(every_class_num.items()):
             plt.text(x=index, y=v, s=str(v), ha='center')
-        # 设置x坐标
         plt.xlabel('image class')
-        # 设置y坐标
         plt.ylabel('number of images')
-        # 设置柱状图的标题
         plt.title('class distribution')
 
-        plt.savefig("class_distribution.png")
+        res_path = os.path.join(save_path, '00000_class_distribution.png')
+        plt.savefig(res_path)
         plt.show()
 
 
 if __name__ == '__main__':
-    """
-    脚本说明：
-        该脚本用于yolo标注格式（.txt）的标注框可视化
-    参数明说：
-        image_path:图片数据路径
-        anno_path:txt标注文件路径
-        show:是否展示标注后的图片
-        plot_image:是否对每一类进行统计，并且保存图片
-    """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ip', '--image-path', type=str, default='./data/images', help='image path')
-    parser.add_argument('-ap', '--anno-path', type=str, default='./data/labels/yolo', help='annotation path')
-    parser.add_argument('-s', '--show', action='store_true', help='weather show img')
-    parser.add_argument('-p', '--plot-image', action='store_true')
+    parser.add_argument('-ip', '--image-path', type=str, default='/workspace/valdata/images', help='image path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/valdata/labels', help='annotation path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/resultscoco', help='labeled img saving path')
+    parser.add_argument('-p', '--plot-image', action='store_true', help='weather to save stastic result')
     opt = parser.parse_args()
 
-    if len(sys.argv) > 1:
-        print(opt)
-        show_image(opt.image_path, opt.anno_path, opt.show, opt.plot_image)
-    else:
-        image_path = './data/images'
-        anno_path = './data/labels/yolo'
-        show_image(image_path, anno_path, show=True, plot_image=True)
-        print(every_class_num)
-        print("category nums: {}".format(len(category_set)))
-        print("image nums: {}".format(len(image_set)))
-        print("bbox nums: {}".format(sum(every_class_num.values())))
+    print(opt)
+    show_image(opt.image_path, opt.anno_path, opt.save_path, opt.plot_image)
+    print(every_class_num)
+    print("category nums: {}".format(len(category_set)))
+    print("image nums: {}".format(len(image_set)))
+    print("bbox nums: {}".format(sum(every_class_num.values())))
