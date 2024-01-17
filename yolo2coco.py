@@ -19,7 +19,6 @@ image_set = set()
 image_id = 000000
 annotation_id = 0
 
-
 def addCatItem(category_dict):
     for k, v in category_dict.items():
         category_item = dict()
@@ -27,7 +26,6 @@ def addCatItem(category_dict):
         category_item['id'] = int(k)
         category_item['name'] = v
         coco['categories'].append(category_item)
-
 
 def addImgItem(file_name, size):
     global image_id
@@ -44,7 +42,6 @@ def addImgItem(file_name, size):
     coco['images'].append(image_item)
     image_set.add(file_name)
     return image_id
-
 
 def addAnnoItem(object_name, image_id, category_id, bbox):
     global annotation_id
@@ -77,7 +74,6 @@ def addAnnoItem(object_name, image_id, category_id, bbox):
     annotation_item['id'] = annotation_id
     coco['annotations'].append(annotation_item)
 
-
 def xywhn2xywh(bbox, size):
     bbox = list(map(float, bbox))
     size = list(map(float, size))
@@ -88,14 +84,11 @@ def xywhn2xywh(bbox, size):
     box = (xmin, ymin, w, h)
     return list(map(int, box))
 
-
-def parseXmlFilse(image_path, anno_path, save_path, json_name='train.json'):
+def parseXmlFilse(anno_path, save_path, image_path, json_name='train.json'):
     assert os.path.exists(image_path), "ERROR {} dose not exists".format(image_path)
     assert os.path.exists(anno_path), "ERROR {} dose not exists".format(anno_path)
-    if os.path.exists(save_path):
-        shutil.rmtree(save_path)
-    os.makedirs(save_path)
-    json_path = os.path.join(save_path, json_name)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
 
     category_set = []
     with open(anno_path + '/classes.txt', 'r') as f:
@@ -126,35 +119,17 @@ def parseXmlFilse(image_path, anno_path, save_path, json_name='train.json'):
                 bbox = xywhn2xywh((i[1], i[2], i[3], i[4]), shape)
                 addAnnoItem(category_name, current_image_id, category, bbox)
 
-    json.dump(coco, open(json_path, 'w'))
+    json.dump(coco, open(save_path, 'w'))
     print("class nums:{}".format(len(coco['categories'])))
     print("image nums:{}".format(len(coco['images'])))
     print("bbox nums:{}".format(len(coco['annotations'])))
 
-
 if __name__ == '__main__':
-    """
-    脚本说明：
-        本脚本用于将yolo格式的标注文件.txt转换为coco格式的标注文件.json
-    参数说明：
-        anno_path:标注文件txt存储路径
-        save_path:json文件输出的文件夹
-        image_path:图片路径
-        json_name:json文件名字
-    """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='./data/labels/yolo', help='yolo txt path')
-    parser.add_argument('-s', '--save-path', type=str, default='./data/convert/coco', help='json save path')
-    parser.add_argument('--image-path', default='./data/images')
-    parser.add_argument('--json-name', default='train.json')
-
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/yolo/labels', help='yolo .txt path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/coco/annotations/instances_train2017.jsopn', help='coco .json save path')
+    parser.add_argument('-ip', '--img-path', type=str, default='/workspace/yolo/images', help='yolo images path')
     opt = parser.parse_args()
-    if len(sys.argv) > 1:
-        print(opt)
-        parseXmlFilse(**vars(opt))
-    else:
-        anno_path = './data/labels/yolo'
-        save_path = './data/convert/coco'
-        image_path = './data/images'
-        json_name = 'train.json'
-        parseXmlFilse(image_path, anno_path, save_path, json_name)
+
+    print(opt)
+    parseXmlFilse(opt.anno_path, opt.save_path, opt.img_path)
