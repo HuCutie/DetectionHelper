@@ -1,8 +1,6 @@
 import os
 import json
 import argparse
-import sys
-import shutil
 from lxml import etree
 from tqdm import tqdm
 
@@ -10,16 +8,7 @@ category_set = set()
 image_set = set()
 bbox_nums = 0
 
-
 def parse_xml_to_dict(xml):
-    """
-    将xml文件解析成字典形式，参考tensorflow的recursive_parse_xml_to_dict
-    Args:
-        xml: xml tree obtained by parsing XML file contents using lxml.etree
-
-    Returns:
-        Python dictionary holding XML contents.
-    """
     if len(xml) == 0:  # 遍历到底层，直接返回tag对应的信息
         return {xml.tag: xml.text}
 
@@ -34,13 +23,11 @@ def parse_xml_to_dict(xml):
             result[child.tag].append(child_result[child.tag])
     return {xml.tag: result}
 
-
 def write_classIndices(category_set):
     class_indices = dict((k, v) for v, k in enumerate(category_set))
     json_str = json.dumps(dict((val, key) for key, val in class_indices.items()), indent=4)
     with open('class_indices.json', 'w') as json_file:
         json_file.write(json_str)
-
 
 def xyxy2xywhn(bbox, size):
     bbox = list(map(float, bbox))
@@ -50,7 +37,6 @@ def xyxy2xywhn(bbox, size):
     wn = (bbox[2] - bbox[0]) / size[0]
     hn = (bbox[3] - bbox[1]) / size[1]
     return (xc, yc, wn, hn)
-
 
 def parser_info(info: dict, only_cat=True, class_indices=None):
     filename = info['annotation']['filename']
@@ -75,12 +61,10 @@ def parser_info(info: dict, only_cat=True, class_indices=None):
 
     return filename, objects
 
-
-def parseXmlFilse(voc_dir, save_dir):
+def parseXmlFiles(voc_dir, save_dir):
     assert os.path.exists(voc_dir), "ERROR {} does not exists".format(voc_dir)
-    if os.path.exists(save_dir):
-        shutil.rmtree(save_dir)
-    os.makedirs(save_dir)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
 
     xml_files = [os.path.join(voc_dir, i) for i in os.listdir(voc_dir) if os.path.splitext(i)[-1] == '.xml']
     for xml_file in xml_files:
@@ -111,22 +95,11 @@ def parseXmlFilse(voc_dir, save_dir):
                     f.write(
                         "{} {:.5f} {:.5f} {:.5f} {:.5f}\n".format(obj[0], obj[1][0], obj[1][1], obj[1][2], obj[1][3]))
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--voc-dir', type=str, default='./data/labels/voc')
-    parser.add_argument('--save-dir', type=str, default='./data/convert/yolo')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/valdata/yolo2voclabels', help='voc .xml path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/valdata/voc2yololabels/train.json', help='yolo .txt save path')
     opt = parser.parse_args()
-    if len(sys.argv) > 1:
-        print(opt)
-        parseXmlFilse(**vars(opt))
-        print("image nums: {}".format(len(image_set)))
-        print("category nums: {}".format(len(category_set)))
-        print("bbox nums: {}".format(bbox_nums))
-    else:
-        voc_dir = './data/labels/voc'
-        save_dir = './data/convert/yolo'
-        parseXmlFilse(voc_dir, save_dir)
-        print("image nums: {}".format(len(image_set)))
-        print("category nums: {}".format(len(category_set)))
-        print("bbox nums: {}".format(bbox_nums))
+
+    print(opt)
+    parseXmlFiles(opt.anno_path, opt.save_path)
