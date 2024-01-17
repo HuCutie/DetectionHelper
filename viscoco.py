@@ -52,7 +52,7 @@ def draw_box(img, objects):
         color = (c[2], c[1], c[0])
 
         cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color)
-        cv2.putText(img, category_name, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, color)
+        cv2.putText(img, category_name, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, color, thickness=2)
     return img
 
 def catid2name(coco):
