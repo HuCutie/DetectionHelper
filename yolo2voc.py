@@ -1,18 +1,13 @@
 import argparse
 import os
-import sys
 import shutil
-
 import cv2
 from lxml import etree, objectify
-
-# 将标签信息写入xml
 from tqdm import tqdm
 
 images_nums = 0
 category_nums = 0
 bbox_nums = 0
-
 
 def save_anno_to_xml(filename, size, objs, save_path):
     E = objectify.ElementMaker(annotate=False)
@@ -61,13 +56,12 @@ def xywhn2xyxy(bbox, size):
     return list(map(int, box))
 
 
-def parseXmlFilse(image_path, anno_path, save_path):
+def parseXmlFilse(anno_path, save_path, image_path):
     global images_nums, category_nums, bbox_nums
     assert os.path.exists(image_path), "ERROR {} dose not exists".format(image_path)
     assert os.path.exists(anno_path), "ERROR {} dose not exists".format(anno_path)
-    if os.path.exists(save_path):
-        shutil.rmtree(save_path)
-    os.makedirs(save_path)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
 
     category_set = []
     with open(anno_path + '/classes.txt', 'r') as f:
@@ -105,31 +99,11 @@ def parseXmlFilse(image_path, anno_path, save_path):
 
 
 if __name__ == '__main__':
-    """
-    脚本说明：
-        本脚本用于将yolo格式的标注文件.txt转换为voc格式的标注文件.xml
-    参数说明：
-        anno_path:标注文件txt存储路径
-        save_path:json文件输出的文件夹
-        image_path:图片路径
-    """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='./data/labels/yolo', help='yolo txt path')
-    parser.add_argument('-s', '--save-path', type=str, default='./data/convert/voc', help='xml save path')
-    parser.add_argument('--image-path', default='./data/images')
-
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/yolo/labels', help='yolo .txt path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/voc/labels', help='voc .xml save path')
+    parser.add_argument('-ip', '--img-path', type=str, default='/workspace/yolo/images', help='yolo images path')
     opt = parser.parse_args()
-    if len(sys.argv) > 1:
-        print(opt)
-        parseXmlFilse(**vars(opt))
-        print("image nums: {}".format(images_nums))
-        print("category nums: {}".format(category_nums))
-        print("bbox nums: {}".format(bbox_nums))
-    else:
-        anno_path = './data/labels/yolo'
-        save_path = './data/convert/voc1'
-        image_path = './data/images'
-        parseXmlFilse(image_path, anno_path, save_path)
-        print("image nums: {}".format(images_nums))
-        print("category nums: {}".format(category_nums))
-        print("bbox nums: {}".format(bbox_nums))
+
+    print(opt)
+    parseXmlFilse(opt.anno_path, opt.save_path, opt.img_path)

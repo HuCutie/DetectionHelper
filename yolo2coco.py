@@ -127,7 +127,7 @@ def parseXmlFilse(anno_path, save_path, image_path, json_name='train.json'):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/yolo/labels', help='yolo .txt path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/coco/annotations/instances_train2017.jsopn', help='coco .json save path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/coco/annotations/instances_train2017.json', help='coco .json save path')
     parser.add_argument('-ip', '--img-path', type=str, default='/workspace/yolo/images', help='yolo images path')
     opt = parser.parse_args()
 
