@@ -2,7 +2,6 @@ import xml.etree.ElementTree as ET
 import os
 import json
 from datetime import datetime
-import sys
 import argparse
 
 coco = dict()
@@ -18,7 +17,6 @@ category_item_id = -1
 image_id = 000000
 annotation_id = 0
 
-
 def addCatItem(name):
     global category_item_id
     category_item = dict()
@@ -29,7 +27,6 @@ def addCatItem(name):
     coco['categories'].append(category_item)
     category_set[name] = category_item_id
     return category_item_id
-
 
 def addImgItem(file_name, size):
     global image_id
@@ -52,7 +49,6 @@ def addImgItem(file_name, size):
     coco['images'].append(image_item)
     image_set.add(file_name)
     return image_id
-
 
 def addAnnoItem(object_name, image_id, category_id, bbox):
     global annotation_id
@@ -85,7 +81,6 @@ def addAnnoItem(object_name, image_id, category_id, bbox):
     annotation_item['id'] = annotation_id
     coco['annotations'].append(annotation_item)
 
-
 def read_image_ids(image_sets_file):
     ids = []
     with open(image_sets_file, 'r') as f:
@@ -93,8 +88,7 @@ def read_image_ids(image_sets_file):
             ids.append(line.strip())
     return ids
 
-
-def parseXmlFilse(data_dir, json_save_path, split='train'):
+def parseXmlFiles(data_dir, json_save_path, split='train'):
     assert os.path.exists(data_dir), "data path:{} does not exist".format(data_dir)
     labelfile = split + ".txt"
     image_sets_file = os.path.join(data_dir, "ImageSets", "Main", labelfile)
@@ -116,7 +110,6 @@ def parseXmlFilse(data_dir, json_save_path, split='train'):
         tree = ET.parse(xml_file)
         root = tree.getroot()
 
-        # 初始化
         size = dict()
         size['width'] = None
         size['height'] = None
@@ -124,18 +117,15 @@ def parseXmlFilse(data_dir, json_save_path, split='train'):
         if root.tag != 'annotation':
             raise Exception('pascal voc xml root element should be annotation, rather than {}'.format(root.tag))
 
-        # 提取图片名字
         file_name = root.findtext('filename')
         assert file_name is not None, "filename is not in the file"
 
-        # 提取图片 size {width,height,depth}
         size_info = root.findall('size')
         assert size_info is not None, "size is not in the file"
         for subelem in size_info[0]:
             size[subelem.tag] = int(subelem.text)
 
         if file_name is not None and size['width'] is not None and file_name not in image_set:
-            # 添加coco['image'],返回当前图片ID
             current_image_id = addImgItem(file_name, size)
             print('add image with name: {}\tand\tsize: {}'.format(file_name, size))
         elif file_name in image_set:
@@ -143,27 +133,23 @@ def parseXmlFilse(data_dir, json_save_path, split='train'):
         else:
             raise Exception("file name:{}\t size:{}".format(file_name, size))
 
-        # 提取一张图片内所有目标object标注信息
         object_info = root.findall('object')
         if len(object_info) == 0:
             continue
-        # 遍历每个目标的标注信息
+
         for object in object_info:
-            # 提取目标名字
             object_name = object.findtext('name')
             if object_name not in category_set:
-                # 创建类别索引
                 current_category_id = addCatItem(object_name)
             else:
                 current_category_id = category_set[object_name]
 
-            # 初始化标签列表
             bndbox = dict()
             bndbox['xmin'] = None
             bndbox['xmax'] = None
             bndbox['ymin'] = None
             bndbox['ymax'] = None
-            # 提取box:[xmin,ymin,xmax,ymax]
+            # box:[xmin,ymin,xmax,ymax]
             bndbox_info = object.findall('bndbox')
             for box in bndbox_info[0]:
                 bndbox[box.tag] = int(box.text)
@@ -198,29 +184,12 @@ def parseXmlFilse(data_dir, json_save_path, split='train'):
     print("image nums:{}".format(len(coco['images'])))
     print("bbox nums:{}".format(len(coco['annotations'])))
 
-
 if __name__ == '__main__':
-    """
-    脚本说明：
-        本脚本用于将VOC格式的标注文件.xml转换为coco格式的标注文件.json
-    参数说明：
-        voc_data_dir:两种格式
-            1.voc2012文件夹的路径，会自动找到voc2012/imageSets/Main/xx.txt
-            2.xml标签文件存放的文件夹
-        json_save_path:json文件输出的文件夹
-        split:主要用于voc2012查找xx.txt,如train.txt.如果用格式2，则不会用到该参数
-    """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--voc-dir', type=str, default='data/label/voc', help='voc path')
-    parser.add_argument('-s', '--save-path', type=str, default='./data/convert/coco/train.json', help='json save path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/valdata/coco2voclabels', help='voc .xml path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/valdata/val2cocolabels/train.json', help='coco .json save path')
     parser.add_argument('-t', '--type', type=str, default='train', help='only use in voc2012/2007')
     opt = parser.parse_args()
-    if len(sys.argv) > 1:
-        print(opt)
-        parseXmlFilse(opt.voc_dir, opt.save_path, opt.type)
-    else:
-        # voc_data_dir = r'D:\dataset\VOC2012\VOCdevkit\VOC2012'
-        voc_data_dir = './data/labels/voc'
-        json_save_path = './data/convert/coco/train.json'
-        split = 'train'
-        parseXmlFilse(data_dir=voc_data_dir, json_save_path=json_save_path, split=split)
+
+    print(opt)
+    parseXmlFiles(opt.anno_path, opt.save_path, opt.type)
