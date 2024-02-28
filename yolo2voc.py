@@ -100,9 +100,9 @@ def parse(anno_path, save_path, image_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/yolo/labels', help='yolo .txt path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/voc/labels', help='voc .xml save path')
-    parser.add_argument('-ip', '--img-path', type=str, default='/workspace/yolo/images', help='yolo images path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/0test/labelsnew/yolo/coco2yolo', help='yolo .txt path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/0test/labelsnew/voc/yolo2voc', help='voc .xml save path')
+    parser.add_argument('-ip', '--img-path', type=str, default='/workspace/0test/images', help='yolo images path')
     opt = parser.parse_args()
 
     print(opt)
