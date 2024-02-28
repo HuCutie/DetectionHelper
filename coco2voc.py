@@ -97,8 +97,8 @@ def parse(anno_path, xmls_save_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/coco', help='coco .json path or coco annotations dir path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/valdata/coco2voclabels', help='voc .xml save path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/0test/labelsnew/coco/voc2coco.json', help='coco .json path or coco annotations dir path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/0test/labelsnew/voc/coco2voc', help='voc .xml save path')
     opt = parser.parse_args()
     
     print(opt)
