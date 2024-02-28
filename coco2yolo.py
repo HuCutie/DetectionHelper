@@ -79,8 +79,8 @@ def parse(json_path, txt_save_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/coco/instances_val2017.json', help='coco .json path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/valdata/coco2yololabels', help='yolo .txt save path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/0test/labelsnew/coco/voc2coco.json', help='coco .json path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/0test/labelsnew/yolo/coco2yolo', help='yolo .txt save path')
     opt = parser.parse_args()
 
     print(opt)
