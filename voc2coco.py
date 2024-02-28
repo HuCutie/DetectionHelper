@@ -92,7 +92,7 @@ def read_image_ids(image_sets_file):
             ids.append(line.strip())
     return ids
 
-def parseXmlFiles(anno_path, save_path, categories, split='train'):
+def parse(anno_path, save_path, categories, split='train'):
     assert os.path.exists(anno_path), "anno path:{} does not exist".format(anno_path)
     labelfile = split + ".txt"
     image_sets_file = os.path.join(anno_path, "ImageSets", "Main", labelfile)
@@ -198,4 +198,4 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     print(opt)
-    parseXmlFiles(opt.anno_path, opt.save_path, opt.categories, opt.type)
+    parse(opt.anno_path, opt.save_path, opt.categories, opt.type)

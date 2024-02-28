@@ -80,7 +80,7 @@ def load_coco(anno_file, xml_save_path):
         save_anno_to_xml(filename, size, objs, xml_save_path)
 
 
-def parseJsonFile(anno_path, xmls_save_path):
+def parse(anno_path, xmls_save_path):
     assert os.path.exists(anno_path), "data dir:{} does not exits".format(anno_path)
 
     if os.path.isdir(anno_path):
@@ -102,4 +102,4 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     
     print(opt)
-    parseJsonFile(opt.anno_path, opt.save_path)
+    parse(opt.anno_path, opt.save_path)

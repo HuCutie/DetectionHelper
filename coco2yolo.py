@@ -66,7 +66,7 @@ def load_coco(anno_file, xml_save_path):
         save_anno_to_txt(info, xml_save_path)
 
 
-def parseJsonFile(json_path, txt_save_path):
+def parse(json_path, txt_save_path):
     assert os.path.exists(json_path), "json path:{} does not exists".format(json_path)
     
     if not os.path.exists(txt_save_path):
@@ -84,4 +84,4 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     print(opt)
-    parseJsonFile(opt.anno_path, opt.save_path)
+    parse(opt.anno_path, opt.save_path)

@@ -1,8 +1,6 @@
 import argparse
 import json
 import os
-import sys
-import shutil
 from datetime import datetime
 
 import cv2
@@ -84,7 +82,7 @@ def xywhn2xywh(bbox, size):
     box = (xmin, ymin, w, h)
     return list(map(int, box))
 
-def parseXmlFilse(anno_path, save_path, image_path, json_name='train.json'):
+def parse(anno_path, save_path, image_path, json_name='train.json'):
     assert os.path.exists(image_path), "ERROR {} dose not exists".format(image_path)
     assert os.path.exists(anno_path), "ERROR {} dose not exists".format(anno_path)
     if not os.path.exists(save_path):
@@ -132,4 +130,4 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     print(opt)
-    parseXmlFilse(opt.anno_path, opt.save_path, opt.img_path)
+    parse(opt.anno_path, opt.save_path, opt.img_path)

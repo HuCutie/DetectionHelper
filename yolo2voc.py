@@ -56,7 +56,7 @@ def xywhn2xyxy(bbox, size):
     return list(map(int, box))
 
 
-def parseXmlFilse(anno_path, save_path, image_path):
+def parse(anno_path, save_path, image_path):
     global images_nums, category_nums, bbox_nums
     assert os.path.exists(image_path), "ERROR {} dose not exists".format(image_path)
     assert os.path.exists(anno_path), "ERROR {} dose not exists".format(anno_path)
@@ -106,4 +106,4 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     print(opt)
-    parseXmlFilse(opt.anno_path, opt.save_path, opt.img_path)
+    parse(opt.anno_path, opt.save_path, opt.img_path)

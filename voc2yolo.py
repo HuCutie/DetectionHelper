@@ -61,7 +61,7 @@ def parser_info(info: dict, only_cat=True, class_indices=None):
 
     return filename, objects
 
-def parseXmlFiles(voc_dir, save_dir):
+def parse(voc_dir, save_dir):
     assert os.path.exists(voc_dir), "ERROR {} does not exists".format(voc_dir)
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -102,4 +102,4 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     print(opt)
-    parseXmlFiles(opt.anno_path, opt.save_path)
+    parse(opt.anno_path, opt.save_path)
