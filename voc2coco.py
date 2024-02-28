@@ -17,16 +17,20 @@ category_item_id = -1
 image_id = 000000
 annotation_id = 0
 
-def addCatItem(name):
+def addCatItems(categories):
     global category_item_id
-    category_item = dict()
-    category_item['supercategory'] = 'none'
-    category_item_id += 1
-    category_item['id'] = category_item_id
-    category_item['name'] = name
-    coco['categories'].append(category_item)
-    category_set[name] = category_item_id
-    return category_item_id
+    category_ids = []
+    for category in categories:
+        category_item = dict()
+        category_item['supercategory'] = 'none'
+        category_item_id += 1
+        category_item['id'] = category_item_id
+        category_item['name'] = category
+        coco['categories'].append(category_item)
+        category_set[category] = category_item_id
+        category_ids.append(category_item_id)
+
+    return category_ids
 
 def addImgItem(file_name, size):
     global image_id
@@ -88,21 +92,22 @@ def read_image_ids(image_sets_file):
             ids.append(line.strip())
     return ids
 
-def parseXmlFiles(data_dir, json_save_path, split='train'):
-    assert os.path.exists(data_dir), "data path:{} does not exist".format(data_dir)
+def parseXmlFiles(anno_path, save_path, categories, split='train'):
+    assert os.path.exists(anno_path), "anno path:{} does not exist".format(anno_path)
     labelfile = split + ".txt"
-    image_sets_file = os.path.join(data_dir, "ImageSets", "Main", labelfile)
+    image_sets_file = os.path.join(anno_path, "ImageSets", "Main", labelfile)
     xml_files_list = []
     if os.path.isfile(image_sets_file):
         ids = read_image_ids(image_sets_file)
-        xml_files_list = [os.path.join(data_dir, "Annotations", f"{i}.xml") for i in ids]
-    elif os.path.isdir(data_dir):
-        # 修改此处xml的路径即可
-        # xml_dir = os.path.join(data_dir,"labels/voc")
-        xml_dir = data_dir
+        xml_files_list = [os.path.join(anno_path, "Annotations", f"{i}.xml") for i in ids]
+    elif os.path.isdir(anno_path):
+        xml_dir = anno_path
         xml_list = os.listdir(xml_dir)
         xml_files_list = [os.path.join(xml_dir, i) for i in xml_list]
 
+    # mapping categories to indices
+    addCatItems(categories)
+    
     for xml_file in xml_files_list:
         if not xml_file.endswith('.xml'):
             continue
@@ -139,10 +144,7 @@ def parseXmlFiles(data_dir, json_save_path, split='train'):
 
         for object in object_info:
             object_name = object.findtext('name')
-            if object_name not in category_set:
-                current_category_id = addCatItem(object_name)
-            else:
-                current_category_id = category_set[object_name]
+            current_category_id = category_set[object_name]
 
             bndbox = dict()
             bndbox['xmin'] = None
@@ -176,20 +178,24 @@ def parseXmlFiles(data_dir, json_save_path, split='train'):
                                                                                                    bbox))
                 addAnnoItem(object_name, current_image_id, current_category_id, bbox)
 
-    json_parent_dir = os.path.dirname(json_save_path)
+    json_parent_dir = os.path.dirname(save_path)
     if not os.path.exists(json_parent_dir):
         os.makedirs(json_parent_dir)
-    json.dump(coco, open(json_save_path, 'w'))
+    json.dump(coco, open(save_path, 'w'))
     print("class nums:{}".format(len(coco['categories'])))
     print("image nums:{}".format(len(coco['images'])))
     print("bbox nums:{}".format(len(coco['annotations'])))
 
 if __name__ == '__main__':
+    # Define your categories
+    categories = ['Armored vehicle', 'Transport vehicle', 'tent', 'car']
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/valdata/coco2voclabels', help='voc .xml path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/data/voclabels', help='voc .xml path')
     parser.add_argument('-sp', '--save-path', type=str, default='/workspace/valdata/val2cocolabels/train.json', help='coco .json save path')
-    parser.add_argument('-t', '--type', type=str, default='train', help='only use in voc2012/2007')
+    parser.add_argument('-c', '--categories', nargs='+', default=categories, help='categories in your dataset')
+    parser.add_argument('-t', '--type', type=str, default='train', help='only use in voc2012/2007')    
     opt = parser.parse_args()
 
     print(opt)
-    parseXmlFiles(opt.anno_path, opt.save_path, opt.type)
+    parseXmlFiles(opt.anno_path, opt.save_path, opt.categories, opt.type)
