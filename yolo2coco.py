@@ -82,11 +82,9 @@ def xywhn2xywh(bbox, size):
     box = (xmin, ymin, w, h)
     return list(map(int, box))
 
-def parse(anno_path, save_path, image_path, json_name='train.json'):
+def parse(anno_path, save_path, image_path):
     assert os.path.exists(image_path), "ERROR {} dose not exists".format(image_path)
     assert os.path.exists(anno_path), "ERROR {} dose not exists".format(anno_path)
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
 
     category_set = []
     with open(anno_path + '/classes.txt', 'r') as f:
@@ -124,9 +122,9 @@ def parse(anno_path, save_path, image_path, json_name='train.json'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/yolo/labels', help='yolo .txt path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/coco/annotations/instances_train2017.json', help='coco .json save path')
-    parser.add_argument('-ip', '--img-path', type=str, default='/workspace/yolo/images', help='yolo images path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/0test/labelsnew/yolo/voc2yolo', help='yolo .txt path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/0test/labelsnew/coco/yolo2coco.json', help='coco .json save path')
+    parser.add_argument('-ip', '--img-path', type=str, default='/workspace/0test/images', help='yolo images path')
     opt = parser.parse_args()
 
     print(opt)
