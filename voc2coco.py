@@ -191,8 +191,8 @@ if __name__ == '__main__':
     categories = ['Armored vehicle', 'Transport vehicle', 'tent', 'car']
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/data/voclabels', help='voc .xml path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/valdata/val2cocolabels/train.json', help='coco .json save path')
+    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/0test/labels/voc', help='voc .xml path')
+    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/0test/labelsnew/coco/voc2coco.json', help='coco .json save path')
     parser.add_argument('-c', '--categories', nargs='+', default=categories, help='categories in your dataset')
     parser.add_argument('-t', '--type', type=str, default='train', help='only use in voc2012/2007')    
     opt = parser.parse_args()
