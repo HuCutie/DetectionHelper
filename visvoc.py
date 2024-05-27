@@ -94,7 +94,8 @@ def show_image(image_path, anno_path, save_path, plot_image=False):
         img = cv2.imread(file_path)
         if img is None:
             continue
-        img = draw_box(img, xml_info_dict['annotation']['object'])
+        if 'object' in xml_info_dict['annotation']:
+            img = draw_box(img, xml_info_dict['annotation']['object'])
         res_path = os.path.join(save_path, filename)
         cv2.imwrite(res_path, img)
         
