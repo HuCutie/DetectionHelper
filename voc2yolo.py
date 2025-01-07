@@ -5,6 +5,8 @@ from tqdm import tqdm
 
 image_set = set()
 bbox_nums = 0
+total_files = 0  # Track the total number of files processed
+categories_set = set()
 
 def parse_xml_to_dict(xml):
     if len(xml) == 0:
@@ -47,23 +49,39 @@ def parser_info(info: dict, class_indices):
             obj_category = class_indices[obj_name]
             object = [obj_category, bbox]
             objects.append(object)
+            categories_set.add(obj_name)
 
     return filename, objects
 
-def parse(voc_dir, save_dir, categories):
-    assert os.path.exists(voc_dir), "ERROR {} does not exists".format(voc_dir)
+def parse(voc_dir, save_dir):
+    global total_files, bbox_nums
+
+    assert os.path.exists(voc_dir), "ERROR: {} does not exist".format(voc_dir)
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
     xml_files = [os.path.join(voc_dir, i) for i in os.listdir(voc_dir) if os.path.splitext(i)[-1] == '.xml']
 
-    with open(save_dir + "/classes.txt", 'w') as classes_file:
+    # Automatically gather categories from XML files
+    categories = set()
+    for xml_file in xml_files:
+        with open(xml_file) as fid:
+            xml_str = fid.read()
+        xml = etree.fromstring(xml_str)
+        info_dict = parse_xml_to_dict(xml)
+        for obj in info_dict['annotation']['object']:
+            categories.add(obj['name'])
+
+    categories = list(categories)
+
+    # Save the class names in classes.txt
+    with open(os.path.join(save_dir, "classes.txt"), 'w') as classes_file:
         for cat in categories:
             classes_file.write("{}\n".format(cat))
 
     class_indices = dict((v, k) for k, v in enumerate(categories))
 
-    xml_files = tqdm(xml_files)
+    xml_files = tqdm(xml_files, desc="Processing XML Files", unit="file")
     for xml_file in xml_files:
         with open(xml_file) as fid:
             xml_str = fid.read()
@@ -71,22 +89,23 @@ def parse(voc_dir, save_dir, categories):
         info_dict = parse_xml_to_dict(xml)
         filename, objects = parser_info(info_dict, class_indices=class_indices)
         if len(objects) != 0:
-            global bbox_nums
             bbox_nums += len(objects)
-            with open(save_dir + "/" + filename.split(".")[0] + ".txt", 'w') as f:
+            total_files += 1
+            with open(os.path.join(save_dir, "{}.txt".format(filename.split(".")[0])), 'w') as f:
                 for obj in objects:
                     f.write(
                         "{} {:.5f} {:.5f} {:.5f} {:.5f}\n".format(obj[0], obj[1][0], obj[1][1], obj[1][2], obj[1][3]))
 
+    # Output the statistics
+    print(f"class nums: {len(categories)}")
+    print(f"image nums: {total_files}")
+    print(f"bbox nums: {bbox_nums}")
+
 if __name__ == '__main__':
-    # Define your categories
-    categories = ['Armored vehicle', 'Transport vehicle', 'tent', 'car']
-    
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/0test/labels/voc', help='voc .xml path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/0test/labelsnew/yolo/voc2yolo', help='yolo .txt save path')
-    parser.add_argument('-c', '--categories', nargs='+', default=categories, help='categories in your dataset')
+    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to VOC annotation folder')
+    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save YOLO .txt files')
     opt = parser.parse_args()
 
     print(opt)
-    parse(opt.anno_path, opt.save_path, opt.categories)
+    parse(opt.anno_path, opt.save_path)

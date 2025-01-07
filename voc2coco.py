@@ -3,6 +3,7 @@ import os
 import json
 from datetime import datetime
 import argparse
+from tqdm import tqdm  # Import tqdm for the progress bar
 
 coco = dict()
 coco['images'] = []
@@ -80,38 +81,38 @@ def addAnnoItem(object_name, image_id, category_id, bbox):
     annotation_item['ignore'] = 0
     annotation_item['image_id'] = image_id
     annotation_item['bbox'] = bbox
-    annotation_item['category_id'] = category_id
     annotation_id += 1
     annotation_item['id'] = annotation_id
     coco['annotations'].append(annotation_item)
 
-def read_image_ids(image_sets_file):
-    ids = []
-    with open(image_sets_file, 'r') as f:
-        for line in f.readlines():
-            ids.append(line.strip())
-    return ids
-
-def parse(anno_path, save_path, categories, split='train'):
-    assert os.path.exists(anno_path), "anno path:{} does not exist".format(anno_path)
-    labelfile = split + ".txt"
-    image_sets_file = os.path.join(anno_path, "ImageSets", "Main", labelfile)
-    xml_files_list = []
-    if os.path.isfile(image_sets_file):
-        ids = read_image_ids(image_sets_file)
-        xml_files_list = [os.path.join(anno_path, "Annotations", f"{i}.xml") for i in ids]
-    elif os.path.isdir(anno_path):
-        xml_dir = anno_path
+def read_xml_files(xml_dir):
+    xml_files = []
+    if os.path.isdir(xml_dir):
         xml_list = os.listdir(xml_dir)
-        xml_files_list = [os.path.join(xml_dir, i) for i in xml_list]
+        xml_files = [os.path.join(xml_dir, i) for i in xml_list if i.endswith('.xml')]
+    return xml_files
 
-    # mapping categories to indices
-    addCatItems(categories)
+def parse(anno_path, save_path):
+    assert os.path.exists(anno_path), "anno path:{} does not exist".format(anno_path)
+
+    xml_files_list = read_xml_files(anno_path)
+
+    # Gather categories dynamically from the XML files
+    categories = set()
+
+    for xml_file in tqdm(xml_files_list, desc="Reading XML Files", unit="file"):
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+
+        object_info = root.findall('object')
+        for object in object_info:
+            object_name = object.findtext('name')
+            categories.add(object_name)
+
+    # Mapping categories to indices
+    addCatItems(list(categories))
     
-    for xml_file in xml_files_list:
-        if not xml_file.endswith('.xml'):
-            continue
-
+    for xml_file in tqdm(xml_files_list, desc="Processing Annotations", unit="file"):
         tree = ET.parse(xml_file)
         root = tree.getroot()
 
@@ -132,7 +133,6 @@ def parse(anno_path, save_path, categories, split='train'):
 
         if file_name is not None and size['width'] is not None and file_name not in image_set:
             current_image_id = addImgItem(file_name, size)
-            print('add image with name: {}\tand\tsize: {}'.format(file_name, size))
         elif file_name in image_set:
             raise Exception('file_name duplicated')
         else:
@@ -159,8 +159,6 @@ def parse(anno_path, save_path, categories, split='train'):
             if bndbox['xmin'] is not None:
                 if object_name is None:
                     raise Exception('xml structure broken at bndbox tag')
-                if current_image_id is None:
-                    raise Exception('xml structure broken at bndbox tag')
                 if current_category_id is None:
                     raise Exception('xml structure broken at bndbox tag')
                 bbox = []
@@ -172,10 +170,6 @@ def parse(anno_path, save_path, categories, split='train'):
                 bbox.append(bndbox['xmax'] - bndbox['xmin'])
                 # h
                 bbox.append(bndbox['ymax'] - bndbox['ymin'])
-                print('add annotation with object_name:{}\timage_id:{}\tcat_id:{}\tbbox:{}'.format(object_name,
-                                                                                                   current_image_id,
-                                                                                                   current_category_id,
-                                                                                                   bbox))
                 addAnnoItem(object_name, current_image_id, current_category_id, bbox)
 
     json_parent_dir = os.path.dirname(save_path)
@@ -187,15 +181,10 @@ def parse(anno_path, save_path, categories, split='train'):
     print("bbox nums:{}".format(len(coco['annotations'])))
 
 if __name__ == '__main__':
-    # Define your categories
-    categories = ['Armored vehicle', 'Transport vehicle', 'tent', 'car']
-    
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/0test/labels/voc', help='voc .xml path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/0test/labelsnew/coco/voc2coco.json', help='coco .json save path')
-    parser.add_argument('-c', '--categories', nargs='+', default=categories, help='categories in your dataset')
-    parser.add_argument('-t', '--type', type=str, default='train', help='only use in voc2012/2007')    
+    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to VOC annotation folder')
+    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save the generated COCO JSON file')
     opt = parser.parse_args()
 
     print(opt)
-    parse(opt.anno_path, opt.save_path, opt.categories, opt.type)
+    parse(opt.anno_path, opt.save_path)
