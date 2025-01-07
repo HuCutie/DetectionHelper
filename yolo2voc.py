@@ -119,9 +119,9 @@ def parse(anno_path, save_path, image_path):
 if __name__ == '__main__':
     # Argument parsing
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to YOLO .txt annotations')
-    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save VOC .xml annotations')
-    parser.add_argument('-ip', '--img-path', type=str, required=True, help='Path to YOLO images')
+    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to YOLO .txt annotations folder(with classes.txt)')
+    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save the generated VOC .xml annotations folder')
+    parser.add_argument('-ip', '--img-path', type=str, required=True, help='Path to YOLO images folder')
     opt = parser.parse_args()
 
     print(opt)

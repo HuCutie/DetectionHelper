@@ -104,8 +104,8 @@ def parse(json_path, txt_save_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to COCO annotations')
-    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save YOLO .txt annotations')
+    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to COCO .json annotation file')
+    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save the generated YOLO .txt annotations folder(with classes.txt)')
     opt = parser.parse_args()
 
     print(opt)

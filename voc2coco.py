@@ -182,8 +182,8 @@ def parse(anno_path, save_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to VOC annotation folder')
-    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save the generated COCO JSON file')
+    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to VOC .xml annotations folder')
+    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save the generated COCO .json annotation file')
     opt = parser.parse_args()
 
     print(opt)

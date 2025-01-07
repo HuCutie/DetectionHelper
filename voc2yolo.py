@@ -103,8 +103,8 @@ def parse(voc_dir, save_dir):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to VOC annotation folder')
-    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save YOLO .txt files')
+    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to VOC .xml annotations folder')
+    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save the generated YOLO .txt annotations folder(with classes.txt)')
     opt = parser.parse_args()
 
     print(opt)
