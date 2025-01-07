@@ -119,10 +119,10 @@ def show_image(image_path, anno_path, save_path, plot_image=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ip', '--image-path', type=str, default='/workspace/valdata/images', help='image path')
-    parser.add_argument('-ap', '--anno-path', type=str, default='/workspace/valdata/labels', help='annotation path')
-    parser.add_argument('-sp', '--save-path', type=str, default='/workspace/resultscoco', help='labeled img saving path')
-    parser.add_argument('-p', '--plot-image', action='store_true', help='weather to save stastic result')
+    parser.add_argument('-ip', '--image-path', type=str, required=True, help='Path to the directory containing images')
+    parser.add_argument('-ap', '--anno-path', type=str, required=True, help='Path to the YOLO .txt annotations folder(with classes.txt)')
+    parser.add_argument('-sp', '--save-path', type=str, required=True, help='Path to save the labeled images')
+    parser.add_argument('-p', '--plot-image', action='store_true', help='Whether to save the statistical result as an image')
     opt = parser.parse_args()
 
     print(opt)
